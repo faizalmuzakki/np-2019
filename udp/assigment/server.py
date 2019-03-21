@@ -1,29 +1,58 @@
+# Import module
+from socket import *
 import socket
-# Import socket module
-s = socket.socket()
-# Create a socket object
-host = socket.gethostname()
-# Get local machine name
-port = 12345
-# Reserve a port for your service.
-s.bind((host, port))
-# Bind to the port
+import threading
+import thread
+import time
+import sys
 
-f = open('file.jpg','wb')
-s.listen(5)
-# Now wait for client connection.
+class ProcessTheClient(threading.Thread):
+	def __init__(self, connection, address, iter):
+		self.iter = iter
+		self.file = open('receive'+str(self.iter)+'.jpg', 'wb')
+		self.connection = connection
+		self.address = address
+		threading.Thread.__init__(self)
 
-while True:
-	c, addr = s.accept()
-	# Establish connection with client.
-	print 'Got connection from', addr
-	print "Receiving..."
-	l = c.recv(1024)
-	while (l):
-	    print "Receiving..."
-	    f.write(l)
-	    l = c.recv(1024)
-	f.close()
-	print "Done Receiving"
-	c.send('Thank you for connecting')
-	c.close()
+	def run(self):
+		while True:
+			data = self.connection.recv(32)
+			while(data):
+				print "Receiving... ",self.iter
+				self.file.write(data)
+				time.sleep(.01)
+				data = self.connection.recv(32)
+			self.file.close()
+			print "Done Receiving ",self.iter
+			self.connection.send("Thank you for connecting")
+			self.connection.close()
+
+class Server(threading.Thread):
+	def __init__(self):
+		self.the_clients = []
+		self.my_socket = socket.socket()
+		threading.Thread.__init__(self)
+
+	def run(self):
+		host = socket.gethostname()
+		port = 12345
+		self.my_socket.bind((host, port))
+		self.my_socket.listen(1)
+		iter = 0
+		while True:
+			self.connection, self.client_address = self.my_socket.accept()
+			if self.connection:
+				iter+=1
+			print >> sys.stderr, 'connection from', self.client_address, iter
+
+			clt = ProcessTheClient(self.connection, self.client_address, iter)
+			clt.start()
+
+			self.the_clients.append(clt)
+
+def main():
+	svr = Server()
+	svr.start()
+
+if __name__=="__main__":
+	main()

@@ -1,25 +1,43 @@
+# Import module
+from socket import *
 import socket
-# Import socket module
-s = socket.socket()
-# Create a socket object
-host = socket.gethostname()
-# Get local machine name
-port = 12345
-# Reserve a port for your service.
+import threading
+import thread
+import time
+import sys
 
-s.connect((host, port))
+class Client(threading.Thread):
+	def __init__(self, no):
+		self.my_socket = socket.socket()
+		threading.Thread.__init__(self)
+		self.no = no
 
-f = open('file.png','rb')
-print 'Sending...'
+	def run(self):
+		host = socket.gethostname()
+		port = 12345
+		self.my_socket.connect((host, port))
+		with open('file.jpg', 'rb') as file:
+			print 'Sending... ',self.no
+	        	l = file.read(1024)
+        		while (l):
+				print 'Sending...',self.no
+				self.my_socket.send(l)
+				l = file.read(1024)
+			file.close()
+			print "Done Sending ",self.no
+		self.my_socket.shutdown(socket.SHUT_WR)
+		self.my_socket.close()
 
-l = f.read(1024)
+def main():
+	client1 = Client(1)
+	client2 = Client(2)
+	client3 = Client(3)
+	client4 = Client(4)
 
-while (l):
-    print 'Sending...'
-    s.send(l)
-    l = f.read(1024)
-f.close()
-print "Done Sending"
-s.shutdown(socket.SHUT_WR)
-print s.recv(1024)
-s.close()
+	client1.start()
+	client2.start()
+	client3.start()
+	client4.start()
+
+if __name__=="__main__":
+	main()
