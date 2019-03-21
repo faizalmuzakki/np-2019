@@ -17,15 +17,16 @@ class ProcessTheClient(threading.Thread):
 	def run(self):
 		while True:
 			data = self.connection.recv(32)
+			print "Receiving... ",self.iter
 			while(data):
-				print "Receiving... ",self.iter
 				self.file.write(data)
-				time.sleep(.01)
+				# time.sleep(.01)
 				data = self.connection.recv(32)
 			self.file.close()
 			print "Done Receiving ",self.iter
 			self.connection.send("Thank you for connecting")
 			self.connection.close()
+			break
 
 class Server(threading.Thread):
 	def __init__(self):
@@ -35,7 +36,7 @@ class Server(threading.Thread):
 
 	def run(self):
 		host = socket.gethostname()
-		port = 12345
+		port = 9000
 		self.my_socket.bind((host, port))
 		self.my_socket.listen(1)
 		iter = 0

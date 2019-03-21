@@ -14,7 +14,7 @@ class Client(threading.Thread):
 
 	def run(self):
 		host = socket.gethostname()
-		port = 12345
+		port = 9000
 		self.my_socket.connect((host, port))
 		with open('file.jpg', 'rb') as file:
 			print 'Sending... ',self.no
