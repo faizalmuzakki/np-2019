@@ -9,22 +9,22 @@ import sys
 class Client(threading.Thread):
 	def __init__(self, no):
 		self.my_socket = socket.socket()
+		self.iter = no
+		self.file = open('receive'+str(self.iter)+'.jpg', 'wb')
 		threading.Thread.__init__(self)
-		self.no = no
 
 	def run(self):
 		host = socket.gethostname()
 		port = 9000
 		self.my_socket.connect((host, port))
-		with open('file.jpg', 'rb') as file:
-			print 'Sending... ',self.no
-	        	l = file.read(1024)
-        		while (l):
-				print 'Sending...',self.no
-				self.my_socket.send(l)
-				l = file.read(1024)
-			file.close()
-			print "Done Sending ",self.no
+		data = self.my_socket.recv(32)
+		print "Receiving... ",self.iter
+		while(data):
+			self.file.write(data)
+			# time.sleep(.01)
+			data = self.my_socket.recv(32)
+		self.file.close()
+		print "Done Receiving ",self.iter
 		self.my_socket.shutdown(socket.SHUT_WR)
 		self.my_socket.close()
 
