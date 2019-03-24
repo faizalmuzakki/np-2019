@@ -2,7 +2,6 @@
 from socket import *
 import socket
 import threading
-import thread
 import sys
 import os
 
@@ -17,11 +16,17 @@ class Client(threading.Thread):
 		host = socket.gethostname()
 		port = 9000
 		self.my_socket.sendto('ini data', (host, port))
+		self.my_socket.settimeout(2)
+		received = 0
 		while True:
-			data, addr = self.my_socket.recvfrom(1024)
-			print "block ", data
-			self.file.write(data)
-			self.my_socket.settimeout(2)
+			try:
+				data, addr = self.my_socket.recvfrom(1024)
+				self.file.write(data)
+				received += 1
+			except timeout:
+				break
+		size = os.stat('sent.png').st_size
+		print "\r client {} sent {} of {} " . format(self.iter, received, size)
 		self.file.close()
 		self.my_socket.close()
 

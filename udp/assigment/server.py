@@ -3,6 +3,7 @@ from socket import *
 import socket
 import threading
 import sys
+import os
 
 class ProcessTheClient(threading.Thread):
 	def __init__(self, connection, address):
@@ -16,8 +17,11 @@ class ProcessTheClient(threading.Thread):
 		print "now sending", self.address
 		sent = 0
 		for x in data:
-		    self.connection.sendto(x, self.address)
+			self.connection.sendto(x, self.address)
+			sent+=1
 		print "done sending", self.address
+		size = os.stat('sent.png').st_size
+		print "\r sent {} of {} " . format(sent, size)
 
 class Server(threading.Thread):
 	def __init__(self):
