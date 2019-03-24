@@ -2,8 +2,6 @@
 from socket import *
 import socket
 import threading
-import thread
-import time
 import sys
 
 class ProcessTheClient(threading.Thread):
@@ -13,24 +11,18 @@ class ProcessTheClient(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		while True:
-			with open('file.jpg', 'rb') as file:
-				print 'Sending... ',self.address
-		        	l = file.read(1024)
-	        		while (l):
-					print 'Sending...',self.address
-					self.connection.send(l)
-					l = file.read(1024)
-				file.close()
-				print "Done Sending ",self.address
-			self.connection.send("Thank you for connecting")
-			self.connection.close()
-			break
+		file = open('sent.png', 'rb')
+		data = file.read()
+		print "now sending", self.address
+		sent = 0
+		for x in data:
+		    self.connection.sendto(x, self.address)
+		print "done sending", self.address
 
 class Server(threading.Thread):
 	def __init__(self):
 		self.the_clients = []
-		self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self.my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		threading.Thread.__init__(self)
 
@@ -38,12 +30,11 @@ class Server(threading.Thread):
 		host = socket.gethostname()
 		port = 9000
 		self.my_socket.bind((host, port))
-		self.my_socket.listen(1)
 		while True:
-			self.connection, self.client_address = self.my_socket.accept()
+			data, self.client_address = self.my_socket.recvfrom(1024)
 			print >> sys.stderr, 'connection from', self.client_address
 
-			clt = ProcessTheClient(self.connection, self.client_address)
+			clt = ProcessTheClient(self.my_socket, self.client_address)
 			clt.start()
 
 			self.the_clients.append(clt)

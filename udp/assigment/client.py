@@ -3,29 +3,26 @@ from socket import *
 import socket
 import threading
 import thread
-import time
 import sys
+import os
 
 class Client(threading.Thread):
 	def __init__(self, no):
-		self.my_socket = socket.socket()
 		self.iter = no
-		self.file = open('receive'+str(self.iter)+'.jpg', 'wb')
+		self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.file = open('received'+str(self.iter)+'.jpg', 'wb+')
 		threading.Thread.__init__(self)
 
 	def run(self):
 		host = socket.gethostname()
 		port = 9000
-		self.my_socket.connect((host, port))
-		data = self.my_socket.recv(32)
-		print "Receiving... ",self.iter
-		while(data):
+		self.my_socket.sendto('ini data', (host, port))
+		while True:
+			data, addr = self.my_socket.recvfrom(1024)
+			print "block ", data
 			self.file.write(data)
-			# time.sleep(.01)
-			data = self.my_socket.recv(32)
+			self.my_socket.settimeout(2)
 		self.file.close()
-		print "Done Receiving ",self.iter
-		self.my_socket.shutdown(socket.SHUT_WR)
 		self.my_socket.close()
 
 def main():
