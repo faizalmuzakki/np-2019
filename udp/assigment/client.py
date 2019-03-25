@@ -9,7 +9,6 @@ class Client(threading.Thread):
 	def __init__(self, no):
 		self.iter = no
 		self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.file = open('received'+str(self.iter)+'.jpg', 'wb+')
 		threading.Thread.__init__(self)
 
 	def run(self):
@@ -17,17 +16,23 @@ class Client(threading.Thread):
 		port = 9000
 		self.my_socket.sendto('ini data', (host, port))
 		self.my_socket.settimeout(2)
+		size = os.stat('file.jpg').st_size
+		fileno = 0
+		file = open('received_client'+str(self.iter)+'_'+str(fileno)+'.jpg', 'wb+')
 		received = 0
 		while True:
 			try:
 				data, addr = self.my_socket.recvfrom(1024)
-				self.file.write(data)
+				file.write(data)
 				received += 1
 			except timeout:
-				break
-		size = os.stat('file.jpg').st_size
-		print "\r client {} sent {} of {} " . format(self.iter, received, size)
-		self.file.close()
+				if received > 0:
+					print "\r client {} received {} of {} " . format(self.iter, received, size)
+					file.close()
+					fileno += 1
+					file = open('received_client'+str(self.iter)+'_'+str(fileno)+'.jpg', 'wb+')
+				# self.iter += 1
+				received = 0
 		self.my_socket.close()
 
 def main():
