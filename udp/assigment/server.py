@@ -12,7 +12,7 @@ class ProcessTheClient(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		file = open('sent.png', 'rb')
+		file = open('file.jpg', 'rb')
 		data = file.read()
 		print "now sending", self.address
 		sent = 0
@@ -20,7 +20,7 @@ class ProcessTheClient(threading.Thread):
 			self.connection.sendto(x, self.address)
 			sent+=1
 		print "done sending", self.address
-		size = os.stat('sent.png').st_size
+		size = os.stat('file.jpg').st_size
 		print "\r sent {} of {} " . format(sent, size)
 
 class Server(threading.Thread):

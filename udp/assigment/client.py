@@ -25,7 +25,7 @@ class Client(threading.Thread):
 				received += 1
 			except timeout:
 				break
-		size = os.stat('sent.png').st_size
+		size = os.stat('file.jpg').st_size
 		print "\r client {} sent {} of {} " . format(self.iter, received, size)
 		self.file.close()
 		self.my_socket.close()
