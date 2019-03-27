@@ -34,35 +34,38 @@ while True:
 
 	elif command[0] == 'download':
 		if len(command) == 2:
-			sock.settimeout(1)
-			print "downloading files"
-			print '================='
+			status = sock.recv(32)
+			if status == '200':
+				sock.settimeout(1)
+				print "downloading files"
+				print '================='
 
-			real = command[1].split("/")
-			filename = name+'_'+str(real[-1])
-			file = open(filename, 'wb')
-			print "Receiving... ", filename
-			while True:
-				try:
-					data = sock.recv(32)
-					file.write(data)
-				except timeout:
-					break
-			file.close()
-			print "Done Receiving ", filename
+				real = command[1].split("/")
+				filename = name+'_'+str(real[-1])
+				file = open(filename, 'wb')
+				print "Receiving... ", filename
+				while True:
+					try:
+						data = sock.recv(32)
+						file.write(data)
+					except timeout:
+						break
+				file.close()
+				print "Done Receiving ", filename
+			else:
+				print "file not found"
 
 		else:
 			print "syntax error"
 
 	elif command[0] == 'upload':
 		if len(command) == 2:
-			files = glob.glob("*")
-			print "uploading files"
-			print '================='
-
 			filename = command[1]
-			if filename in files:
+			try:
 				with open(filename, 'rb') as file:
+					print "uploading files"
+					print '================='
+					sock.send('200')
 					print 'Sending to server... '
 					while True:
 						print 'Sending... {} to server' . format(filename)
@@ -72,8 +75,9 @@ while True:
 						sock.send(bytes)
 					file.close()
 				print "Done Sending", filename
-			else:
-				print "file not found"
+			except IOError:
+				sock.send('404')
+				print 'file not found'
 
 		else:
 			print "syntax error"

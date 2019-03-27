@@ -14,6 +14,7 @@ def sendFiles(conn, name, addr):
 	ip, port = addr
 	try:
 		with open(name, 'rb') as file:
+			conn.send('200')
 			print 'Sending... ', addr
 			while True:
 				print 'Sending... {} to {}' . format(name, str(port))
@@ -23,21 +24,28 @@ def sendFiles(conn, name, addr):
 				conn.send(bytes)
 			file.close()
 	except IOError:
+		conn.send('404')
 		print "file not found"
 
-def downloadFiles(addr, name):
-	ip, port = addr
+def downloadFiles(conn, addr, name):
+	status = conn.recv(32)
+	if status == '200':
+		ip, port = addr
 
-	file = open(str(port)+'_'+name, 'wb')
-	print "Receiving... ", name
-	sock.settimeout(2)
-	while True:
-		data = sock.recv(32)
-		if not data:
-			break
-		file.write(data)
-	file.close()
-	print "Done Receiving ", name
+		file = open(str(port)+'_'+name, 'wb')
+		print "Receiving... ", name
+		conn.settimeout(2)
+		while True:
+			try:
+				data = conn.recv(32)
+				file.write(data)
+			except timeout:
+				break
+		file.close()
+		print "Done Receiving ", name
+
+	else:
+		print "404: not found"
 
 class ProcessTheClient(Thread):
 	def __init__(self, connection, address):
@@ -66,8 +74,7 @@ class ProcessTheClient(Thread):
 			elif data[0] == 'upload':
 				if len(data) == 2:
 					filename = data[1]
-					downloadFiles(self.address, filename)
-					print 'iki'
+					downloadFiles(self.connection, self.address, filename)
 				else:
 					print "syntax error"
 
