@@ -12,3 +12,17 @@
 - `ls` (show list file on server)
 - `download [filename]` (download file from server)
 - `upload [filename]` (upload file to server)
+
+#### Testing
+
+1. ls
+
+![ls](ls.png)
+
+2. download
+
+![download](download.png)
+
+3. upload
+
+![upload](upload.png)

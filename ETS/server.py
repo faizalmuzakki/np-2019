@@ -4,9 +4,6 @@ import socket
 from threading import Thread
 import glob
 
-
-command = ["ls", "download"]
-
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((socket.gethostname(), 9000))
@@ -15,15 +12,18 @@ sock.listen(1)
 def sendFiles(conn, name, addr):
 	files = glob.glob("*")
 	ip, port = addr
-	with open(name, 'rb') as file:
-		print 'Sending... ', addr
-		while True:
-			print 'Sending... {} to {}' . format(name, str(port))
-			bytes = file.read(1024)
-			if not bytes:
-				break
-			conn.send(bytes)
-		file.close()
+	try:
+		with open(name, 'rb') as file:
+			print 'Sending... ', addr
+			while True:
+				print 'Sending... {} to {}' . format(name, str(port))
+				bytes = file.read(1024)
+				if not bytes:
+					break
+				conn.send(bytes)
+			file.close()
+	except IOError:
+		print "file not found"
 
 def downloadFiles(addr, name):
 	ip, port = addr
